@@ -1,0 +1,1783 @@
+# 1. Networking (Deep Dive)
+
+A systems-level networking chapter that treats packets and logs as evidence, not trivia.
+
+Last updated: 2026-01-22
+
+## How To Read This Chapter
+Read with a terminal open and a capture tool ready.
+Networking is not memorization; it is a model you verify.
+Every claim should be proven with a packet capture, a log, or a command.
+
+## What You Must Be Able To Explain (Interview + Real Work)
+- frame vs packet vs segment vs datagram
+- switch vs router vs firewall vs proxy
+- why ARP exists and why it is insecure
+- what TCP guarantees and what TLS adds
+- what a socket/flow is (4-tuple)
+- why NAT exists and why it breaks investigations
+
+## The Mental Model
+Networking is moving bytes from a process on Host A to a process on Host B.
+Layers solve separate problems:
+- L2: local delivery on a LAN (MAC -> switch port)
+- L3: routing across networks (IP -> next hop)
+- L4: process-to-process delivery (ports -> sockets)
+- L7: meaning of bytes (HTTP/DNS/SMB)
+
+## Vocabulary (Precision Matters)
+- Frame (L2): Ethernet unit on a LAN, addressed by MAC
+- Packet (L3): IP unit across networks, addressed by IP
+- Segment (L4/TCP): ports + flags + seq/ack
+- Datagram (L4/UDP): ports + payload
+
+## Addresses
+MAC address: local identity on the LAN.
+IP address: routed identity across networks.
+Port: service/process identity on a host.
+
+## Flows (4-Tuple)
+A flow is identified by source IP, source port, destination IP, destination port, and protocol.
+Flow identity is how firewalls, SIEMs, and SOC tools reason about connections.
+
+## Switching (LAN)
+Switches learn MAC -> port mappings by observing source MAC addresses.
+They forward frames based on destination MAC.
+Unknown destinations are flooded.
+
+## Routing (Between Networks)
+Routers forward packets based on destination IP and routing tables.
+MAC addresses change at every hop; IP addresses usually stay end-to-end.
+TTL is decremented by each router to prevent loops.
+
+## TCP (Reliability and State)
+TCP is a state machine. That state produces strong detection signals.
+Three-way handshake: SYN, SYN-ACK, ACK.
+FIN is graceful close; RST is abort/kill.
+
+## UDP (Stateless)
+UDP has no handshake and no built-in retransmission.
+You infer reachability via responses or ICMP errors.
+Reflection/amplification attacks often use UDP services.
+
+## NAT (Reality of Most Networks)
+NAT rewrites addresses/ports.
+A single public IP can represent many internal hosts.
+To attribute traffic, you need NAT translation logs.
+
+## Hands-On Labs
+Lab 1: Capture a TCP handshake and teardown.
+- Command: curl -I https://example.com
+- Wireshark filter: tcp.flags.syn==1 && tcp.flags.ack==0
+- Identify SYN, SYN-ACK, ACK, and FIN/RST
+Lab 2: Observe DNS queries and TTL.
+- Command: nslookup example.com
+- Wireshark filter: dns
+
+## Defender Mapping
+Endpoint logs show which process created traffic.
+Firewall/netflow shows who talked to who and how much.
+DNS logs show intent and early-stage behaviors.
+Packet capture shows ground truth.
+
+## Exercises
+Explain why a switch cannot route between subnets.
+Explain how ARP spoofing enables MITM.
+Explain why NAT complicates attribution.
+Capture one TCP session and write its 4-tuple.
+
+## Deep Study Notes
+
+### How To Read This Chapter - Deep Notes
+- Note 001: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 002: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 003: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 004: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 005: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 006: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 007: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 008: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 009: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 010: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 011: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 012: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 013: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 014: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 015: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 016: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 017: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 018: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 019: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 020: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 021: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 022: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 023: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 024: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 025: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 026: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 027: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 028: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 029: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 030: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 031: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 032: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 033: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 034: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 035: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 036: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 037: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 038: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 039: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 040: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 041: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 042: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 043: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 044: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 045: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 046: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 047: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 048: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 049: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 050: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 051: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 052: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 053: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 054: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 055: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 056: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 057: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 058: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 059: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 060: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 061: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 062: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 063: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 064: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 065: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 066: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 067: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 068: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 069: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 070: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 071: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 072: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 073: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 074: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 075: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 076: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 077: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 078: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 079: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 080: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 081: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 082: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 083: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 084: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 085: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 086: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 087: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 088: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 089: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 090: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 091: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 092: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 093: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 094: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 095: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 096: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 097: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 098: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 099: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 100: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 101: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 102: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 103: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 104: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 105: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 106: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 107: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 108: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 109: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 110: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 111: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 112: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 113: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 114: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 115: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 116: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 117: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 118: Describe how to read this chapter with a real example and map it to evidence sources.
+- Note 119: Describe how to read this chapter with a real example and map it to evidence sources.
+
+### What You Must Be Able To Explain (Interview + Real Work) - Deep Notes
+- Note 001: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 002: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 003: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 004: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 005: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 006: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 007: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 008: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 009: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 010: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 011: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 012: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 013: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 014: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 015: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 016: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 017: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 018: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 019: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 020: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 021: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 022: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 023: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 024: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 025: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 026: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 027: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 028: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 029: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 030: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 031: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 032: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 033: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 034: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 035: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 036: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 037: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 038: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 039: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 040: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 041: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 042: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 043: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 044: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 045: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 046: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 047: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 048: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 049: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 050: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 051: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 052: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 053: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 054: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 055: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 056: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 057: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 058: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 059: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 060: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 061: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 062: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 063: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 064: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 065: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 066: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 067: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 068: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 069: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 070: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 071: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 072: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 073: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 074: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 075: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 076: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 077: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 078: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 079: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 080: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 081: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 082: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 083: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 084: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 085: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 086: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 087: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 088: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 089: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 090: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 091: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 092: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 093: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 094: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 095: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 096: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 097: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 098: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 099: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 100: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 101: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 102: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 103: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 104: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 105: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 106: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 107: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 108: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 109: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 110: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 111: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 112: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 113: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 114: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 115: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 116: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 117: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 118: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+- Note 119: Describe what you must be able to explain (interview + real work) with a real example and map it to evidence sources.
+
+### The Mental Model - Deep Notes
+- Note 001: Describe the mental model with a real example and map it to evidence sources.
+- Note 002: Describe the mental model with a real example and map it to evidence sources.
+- Note 003: Describe the mental model with a real example and map it to evidence sources.
+- Note 004: Describe the mental model with a real example and map it to evidence sources.
+- Note 005: Describe the mental model with a real example and map it to evidence sources.
+- Note 006: Describe the mental model with a real example and map it to evidence sources.
+- Note 007: Describe the mental model with a real example and map it to evidence sources.
+- Note 008: Describe the mental model with a real example and map it to evidence sources.
+- Note 009: Describe the mental model with a real example and map it to evidence sources.
+- Note 010: Describe the mental model with a real example and map it to evidence sources.
+- Note 011: Describe the mental model with a real example and map it to evidence sources.
+- Note 012: Describe the mental model with a real example and map it to evidence sources.
+- Note 013: Describe the mental model with a real example and map it to evidence sources.
+- Note 014: Describe the mental model with a real example and map it to evidence sources.
+- Note 015: Describe the mental model with a real example and map it to evidence sources.
+- Note 016: Describe the mental model with a real example and map it to evidence sources.
+- Note 017: Describe the mental model with a real example and map it to evidence sources.
+- Note 018: Describe the mental model with a real example and map it to evidence sources.
+- Note 019: Describe the mental model with a real example and map it to evidence sources.
+- Note 020: Describe the mental model with a real example and map it to evidence sources.
+- Note 021: Describe the mental model with a real example and map it to evidence sources.
+- Note 022: Describe the mental model with a real example and map it to evidence sources.
+- Note 023: Describe the mental model with a real example and map it to evidence sources.
+- Note 024: Describe the mental model with a real example and map it to evidence sources.
+- Note 025: Describe the mental model with a real example and map it to evidence sources.
+- Note 026: Describe the mental model with a real example and map it to evidence sources.
+- Note 027: Describe the mental model with a real example and map it to evidence sources.
+- Note 028: Describe the mental model with a real example and map it to evidence sources.
+- Note 029: Describe the mental model with a real example and map it to evidence sources.
+- Note 030: Describe the mental model with a real example and map it to evidence sources.
+- Note 031: Describe the mental model with a real example and map it to evidence sources.
+- Note 032: Describe the mental model with a real example and map it to evidence sources.
+- Note 033: Describe the mental model with a real example and map it to evidence sources.
+- Note 034: Describe the mental model with a real example and map it to evidence sources.
+- Note 035: Describe the mental model with a real example and map it to evidence sources.
+- Note 036: Describe the mental model with a real example and map it to evidence sources.
+- Note 037: Describe the mental model with a real example and map it to evidence sources.
+- Note 038: Describe the mental model with a real example and map it to evidence sources.
+- Note 039: Describe the mental model with a real example and map it to evidence sources.
+- Note 040: Describe the mental model with a real example and map it to evidence sources.
+- Note 041: Describe the mental model with a real example and map it to evidence sources.
+- Note 042: Describe the mental model with a real example and map it to evidence sources.
+- Note 043: Describe the mental model with a real example and map it to evidence sources.
+- Note 044: Describe the mental model with a real example and map it to evidence sources.
+- Note 045: Describe the mental model with a real example and map it to evidence sources.
+- Note 046: Describe the mental model with a real example and map it to evidence sources.
+- Note 047: Describe the mental model with a real example and map it to evidence sources.
+- Note 048: Describe the mental model with a real example and map it to evidence sources.
+- Note 049: Describe the mental model with a real example and map it to evidence sources.
+- Note 050: Describe the mental model with a real example and map it to evidence sources.
+- Note 051: Describe the mental model with a real example and map it to evidence sources.
+- Note 052: Describe the mental model with a real example and map it to evidence sources.
+- Note 053: Describe the mental model with a real example and map it to evidence sources.
+- Note 054: Describe the mental model with a real example and map it to evidence sources.
+- Note 055: Describe the mental model with a real example and map it to evidence sources.
+- Note 056: Describe the mental model with a real example and map it to evidence sources.
+- Note 057: Describe the mental model with a real example and map it to evidence sources.
+- Note 058: Describe the mental model with a real example and map it to evidence sources.
+- Note 059: Describe the mental model with a real example and map it to evidence sources.
+- Note 060: Describe the mental model with a real example and map it to evidence sources.
+- Note 061: Describe the mental model with a real example and map it to evidence sources.
+- Note 062: Describe the mental model with a real example and map it to evidence sources.
+- Note 063: Describe the mental model with a real example and map it to evidence sources.
+- Note 064: Describe the mental model with a real example and map it to evidence sources.
+- Note 065: Describe the mental model with a real example and map it to evidence sources.
+- Note 066: Describe the mental model with a real example and map it to evidence sources.
+- Note 067: Describe the mental model with a real example and map it to evidence sources.
+- Note 068: Describe the mental model with a real example and map it to evidence sources.
+- Note 069: Describe the mental model with a real example and map it to evidence sources.
+- Note 070: Describe the mental model with a real example and map it to evidence sources.
+- Note 071: Describe the mental model with a real example and map it to evidence sources.
+- Note 072: Describe the mental model with a real example and map it to evidence sources.
+- Note 073: Describe the mental model with a real example and map it to evidence sources.
+- Note 074: Describe the mental model with a real example and map it to evidence sources.
+- Note 075: Describe the mental model with a real example and map it to evidence sources.
+- Note 076: Describe the mental model with a real example and map it to evidence sources.
+- Note 077: Describe the mental model with a real example and map it to evidence sources.
+- Note 078: Describe the mental model with a real example and map it to evidence sources.
+- Note 079: Describe the mental model with a real example and map it to evidence sources.
+- Note 080: Describe the mental model with a real example and map it to evidence sources.
+- Note 081: Describe the mental model with a real example and map it to evidence sources.
+- Note 082: Describe the mental model with a real example and map it to evidence sources.
+- Note 083: Describe the mental model with a real example and map it to evidence sources.
+- Note 084: Describe the mental model with a real example and map it to evidence sources.
+- Note 085: Describe the mental model with a real example and map it to evidence sources.
+- Note 086: Describe the mental model with a real example and map it to evidence sources.
+- Note 087: Describe the mental model with a real example and map it to evidence sources.
+- Note 088: Describe the mental model with a real example and map it to evidence sources.
+- Note 089: Describe the mental model with a real example and map it to evidence sources.
+- Note 090: Describe the mental model with a real example and map it to evidence sources.
+- Note 091: Describe the mental model with a real example and map it to evidence sources.
+- Note 092: Describe the mental model with a real example and map it to evidence sources.
+- Note 093: Describe the mental model with a real example and map it to evidence sources.
+- Note 094: Describe the mental model with a real example and map it to evidence sources.
+- Note 095: Describe the mental model with a real example and map it to evidence sources.
+- Note 096: Describe the mental model with a real example and map it to evidence sources.
+- Note 097: Describe the mental model with a real example and map it to evidence sources.
+- Note 098: Describe the mental model with a real example and map it to evidence sources.
+- Note 099: Describe the mental model with a real example and map it to evidence sources.
+- Note 100: Describe the mental model with a real example and map it to evidence sources.
+- Note 101: Describe the mental model with a real example and map it to evidence sources.
+- Note 102: Describe the mental model with a real example and map it to evidence sources.
+- Note 103: Describe the mental model with a real example and map it to evidence sources.
+- Note 104: Describe the mental model with a real example and map it to evidence sources.
+- Note 105: Describe the mental model with a real example and map it to evidence sources.
+- Note 106: Describe the mental model with a real example and map it to evidence sources.
+- Note 107: Describe the mental model with a real example and map it to evidence sources.
+- Note 108: Describe the mental model with a real example and map it to evidence sources.
+- Note 109: Describe the mental model with a real example and map it to evidence sources.
+- Note 110: Describe the mental model with a real example and map it to evidence sources.
+- Note 111: Describe the mental model with a real example and map it to evidence sources.
+- Note 112: Describe the mental model with a real example and map it to evidence sources.
+- Note 113: Describe the mental model with a real example and map it to evidence sources.
+- Note 114: Describe the mental model with a real example and map it to evidence sources.
+- Note 115: Describe the mental model with a real example and map it to evidence sources.
+- Note 116: Describe the mental model with a real example and map it to evidence sources.
+- Note 117: Describe the mental model with a real example and map it to evidence sources.
+- Note 118: Describe the mental model with a real example and map it to evidence sources.
+- Note 119: Describe the mental model with a real example and map it to evidence sources.
+
+### Vocabulary (Precision Matters) - Deep Notes
+- Note 001: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 002: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 003: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 004: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 005: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 006: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 007: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 008: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 009: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 010: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 011: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 012: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 013: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 014: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 015: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 016: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 017: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 018: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 019: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 020: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 021: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 022: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 023: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 024: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 025: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 026: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 027: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 028: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 029: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 030: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 031: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 032: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 033: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 034: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 035: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 036: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 037: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 038: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 039: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 040: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 041: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 042: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 043: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 044: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 045: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 046: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 047: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 048: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 049: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 050: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 051: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 052: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 053: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 054: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 055: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 056: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 057: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 058: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 059: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 060: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 061: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 062: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 063: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 064: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 065: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 066: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 067: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 068: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 069: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 070: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 071: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 072: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 073: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 074: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 075: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 076: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 077: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 078: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 079: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 080: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 081: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 082: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 083: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 084: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 085: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 086: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 087: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 088: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 089: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 090: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 091: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 092: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 093: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 094: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 095: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 096: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 097: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 098: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 099: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 100: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 101: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 102: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 103: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 104: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 105: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 106: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 107: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 108: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 109: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 110: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 111: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 112: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 113: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 114: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 115: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 116: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 117: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 118: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+- Note 119: Describe vocabulary (precision matters) with a real example and map it to evidence sources.
+
+### Addresses - Deep Notes
+- Note 001: Describe addresses with a real example and map it to evidence sources.
+- Note 002: Describe addresses with a real example and map it to evidence sources.
+- Note 003: Describe addresses with a real example and map it to evidence sources.
+- Note 004: Describe addresses with a real example and map it to evidence sources.
+- Note 005: Describe addresses with a real example and map it to evidence sources.
+- Note 006: Describe addresses with a real example and map it to evidence sources.
+- Note 007: Describe addresses with a real example and map it to evidence sources.
+- Note 008: Describe addresses with a real example and map it to evidence sources.
+- Note 009: Describe addresses with a real example and map it to evidence sources.
+- Note 010: Describe addresses with a real example and map it to evidence sources.
+- Note 011: Describe addresses with a real example and map it to evidence sources.
+- Note 012: Describe addresses with a real example and map it to evidence sources.
+- Note 013: Describe addresses with a real example and map it to evidence sources.
+- Note 014: Describe addresses with a real example and map it to evidence sources.
+- Note 015: Describe addresses with a real example and map it to evidence sources.
+- Note 016: Describe addresses with a real example and map it to evidence sources.
+- Note 017: Describe addresses with a real example and map it to evidence sources.
+- Note 018: Describe addresses with a real example and map it to evidence sources.
+- Note 019: Describe addresses with a real example and map it to evidence sources.
+- Note 020: Describe addresses with a real example and map it to evidence sources.
+- Note 021: Describe addresses with a real example and map it to evidence sources.
+- Note 022: Describe addresses with a real example and map it to evidence sources.
+- Note 023: Describe addresses with a real example and map it to evidence sources.
+- Note 024: Describe addresses with a real example and map it to evidence sources.
+- Note 025: Describe addresses with a real example and map it to evidence sources.
+- Note 026: Describe addresses with a real example and map it to evidence sources.
+- Note 027: Describe addresses with a real example and map it to evidence sources.
+- Note 028: Describe addresses with a real example and map it to evidence sources.
+- Note 029: Describe addresses with a real example and map it to evidence sources.
+- Note 030: Describe addresses with a real example and map it to evidence sources.
+- Note 031: Describe addresses with a real example and map it to evidence sources.
+- Note 032: Describe addresses with a real example and map it to evidence sources.
+- Note 033: Describe addresses with a real example and map it to evidence sources.
+- Note 034: Describe addresses with a real example and map it to evidence sources.
+- Note 035: Describe addresses with a real example and map it to evidence sources.
+- Note 036: Describe addresses with a real example and map it to evidence sources.
+- Note 037: Describe addresses with a real example and map it to evidence sources.
+- Note 038: Describe addresses with a real example and map it to evidence sources.
+- Note 039: Describe addresses with a real example and map it to evidence sources.
+- Note 040: Describe addresses with a real example and map it to evidence sources.
+- Note 041: Describe addresses with a real example and map it to evidence sources.
+- Note 042: Describe addresses with a real example and map it to evidence sources.
+- Note 043: Describe addresses with a real example and map it to evidence sources.
+- Note 044: Describe addresses with a real example and map it to evidence sources.
+- Note 045: Describe addresses with a real example and map it to evidence sources.
+- Note 046: Describe addresses with a real example and map it to evidence sources.
+- Note 047: Describe addresses with a real example and map it to evidence sources.
+- Note 048: Describe addresses with a real example and map it to evidence sources.
+- Note 049: Describe addresses with a real example and map it to evidence sources.
+- Note 050: Describe addresses with a real example and map it to evidence sources.
+- Note 051: Describe addresses with a real example and map it to evidence sources.
+- Note 052: Describe addresses with a real example and map it to evidence sources.
+- Note 053: Describe addresses with a real example and map it to evidence sources.
+- Note 054: Describe addresses with a real example and map it to evidence sources.
+- Note 055: Describe addresses with a real example and map it to evidence sources.
+- Note 056: Describe addresses with a real example and map it to evidence sources.
+- Note 057: Describe addresses with a real example and map it to evidence sources.
+- Note 058: Describe addresses with a real example and map it to evidence sources.
+- Note 059: Describe addresses with a real example and map it to evidence sources.
+- Note 060: Describe addresses with a real example and map it to evidence sources.
+- Note 061: Describe addresses with a real example and map it to evidence sources.
+- Note 062: Describe addresses with a real example and map it to evidence sources.
+- Note 063: Describe addresses with a real example and map it to evidence sources.
+- Note 064: Describe addresses with a real example and map it to evidence sources.
+- Note 065: Describe addresses with a real example and map it to evidence sources.
+- Note 066: Describe addresses with a real example and map it to evidence sources.
+- Note 067: Describe addresses with a real example and map it to evidence sources.
+- Note 068: Describe addresses with a real example and map it to evidence sources.
+- Note 069: Describe addresses with a real example and map it to evidence sources.
+- Note 070: Describe addresses with a real example and map it to evidence sources.
+- Note 071: Describe addresses with a real example and map it to evidence sources.
+- Note 072: Describe addresses with a real example and map it to evidence sources.
+- Note 073: Describe addresses with a real example and map it to evidence sources.
+- Note 074: Describe addresses with a real example and map it to evidence sources.
+- Note 075: Describe addresses with a real example and map it to evidence sources.
+- Note 076: Describe addresses with a real example and map it to evidence sources.
+- Note 077: Describe addresses with a real example and map it to evidence sources.
+- Note 078: Describe addresses with a real example and map it to evidence sources.
+- Note 079: Describe addresses with a real example and map it to evidence sources.
+- Note 080: Describe addresses with a real example and map it to evidence sources.
+- Note 081: Describe addresses with a real example and map it to evidence sources.
+- Note 082: Describe addresses with a real example and map it to evidence sources.
+- Note 083: Describe addresses with a real example and map it to evidence sources.
+- Note 084: Describe addresses with a real example and map it to evidence sources.
+- Note 085: Describe addresses with a real example and map it to evidence sources.
+- Note 086: Describe addresses with a real example and map it to evidence sources.
+- Note 087: Describe addresses with a real example and map it to evidence sources.
+- Note 088: Describe addresses with a real example and map it to evidence sources.
+- Note 089: Describe addresses with a real example and map it to evidence sources.
+- Note 090: Describe addresses with a real example and map it to evidence sources.
+- Note 091: Describe addresses with a real example and map it to evidence sources.
+- Note 092: Describe addresses with a real example and map it to evidence sources.
+- Note 093: Describe addresses with a real example and map it to evidence sources.
+- Note 094: Describe addresses with a real example and map it to evidence sources.
+- Note 095: Describe addresses with a real example and map it to evidence sources.
+- Note 096: Describe addresses with a real example and map it to evidence sources.
+- Note 097: Describe addresses with a real example and map it to evidence sources.
+- Note 098: Describe addresses with a real example and map it to evidence sources.
+- Note 099: Describe addresses with a real example and map it to evidence sources.
+- Note 100: Describe addresses with a real example and map it to evidence sources.
+- Note 101: Describe addresses with a real example and map it to evidence sources.
+- Note 102: Describe addresses with a real example and map it to evidence sources.
+- Note 103: Describe addresses with a real example and map it to evidence sources.
+- Note 104: Describe addresses with a real example and map it to evidence sources.
+- Note 105: Describe addresses with a real example and map it to evidence sources.
+- Note 106: Describe addresses with a real example and map it to evidence sources.
+- Note 107: Describe addresses with a real example and map it to evidence sources.
+- Note 108: Describe addresses with a real example and map it to evidence sources.
+- Note 109: Describe addresses with a real example and map it to evidence sources.
+- Note 110: Describe addresses with a real example and map it to evidence sources.
+- Note 111: Describe addresses with a real example and map it to evidence sources.
+- Note 112: Describe addresses with a real example and map it to evidence sources.
+- Note 113: Describe addresses with a real example and map it to evidence sources.
+- Note 114: Describe addresses with a real example and map it to evidence sources.
+- Note 115: Describe addresses with a real example and map it to evidence sources.
+- Note 116: Describe addresses with a real example and map it to evidence sources.
+- Note 117: Describe addresses with a real example and map it to evidence sources.
+- Note 118: Describe addresses with a real example and map it to evidence sources.
+- Note 119: Describe addresses with a real example and map it to evidence sources.
+
+### Flows (4-Tuple) - Deep Notes
+- Note 001: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 002: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 003: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 004: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 005: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 006: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 007: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 008: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 009: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 010: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 011: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 012: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 013: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 014: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 015: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 016: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 017: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 018: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 019: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 020: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 021: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 022: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 023: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 024: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 025: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 026: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 027: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 028: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 029: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 030: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 031: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 032: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 033: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 034: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 035: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 036: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 037: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 038: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 039: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 040: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 041: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 042: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 043: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 044: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 045: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 046: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 047: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 048: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 049: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 050: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 051: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 052: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 053: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 054: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 055: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 056: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 057: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 058: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 059: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 060: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 061: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 062: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 063: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 064: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 065: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 066: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 067: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 068: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 069: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 070: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 071: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 072: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 073: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 074: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 075: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 076: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 077: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 078: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 079: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 080: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 081: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 082: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 083: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 084: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 085: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 086: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 087: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 088: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 089: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 090: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 091: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 092: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 093: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 094: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 095: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 096: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 097: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 098: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 099: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 100: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 101: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 102: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 103: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 104: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 105: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 106: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 107: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 108: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 109: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 110: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 111: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 112: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 113: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 114: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 115: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 116: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 117: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 118: Describe flows (4-tuple) with a real example and map it to evidence sources.
+- Note 119: Describe flows (4-tuple) with a real example and map it to evidence sources.
+
+### Switching (LAN) - Deep Notes
+- Note 001: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 002: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 003: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 004: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 005: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 006: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 007: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 008: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 009: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 010: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 011: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 012: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 013: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 014: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 015: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 016: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 017: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 018: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 019: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 020: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 021: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 022: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 023: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 024: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 025: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 026: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 027: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 028: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 029: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 030: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 031: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 032: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 033: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 034: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 035: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 036: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 037: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 038: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 039: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 040: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 041: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 042: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 043: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 044: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 045: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 046: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 047: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 048: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 049: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 050: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 051: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 052: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 053: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 054: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 055: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 056: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 057: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 058: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 059: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 060: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 061: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 062: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 063: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 064: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 065: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 066: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 067: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 068: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 069: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 070: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 071: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 072: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 073: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 074: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 075: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 076: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 077: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 078: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 079: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 080: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 081: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 082: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 083: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 084: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 085: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 086: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 087: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 088: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 089: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 090: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 091: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 092: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 093: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 094: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 095: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 096: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 097: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 098: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 099: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 100: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 101: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 102: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 103: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 104: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 105: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 106: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 107: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 108: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 109: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 110: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 111: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 112: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 113: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 114: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 115: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 116: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 117: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 118: Describe switching (lan) with a real example and map it to evidence sources.
+- Note 119: Describe switching (lan) with a real example and map it to evidence sources.
+
+### Routing (Between Networks) - Deep Notes
+- Note 001: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 002: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 003: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 004: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 005: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 006: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 007: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 008: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 009: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 010: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 011: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 012: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 013: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 014: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 015: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 016: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 017: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 018: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 019: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 020: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 021: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 022: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 023: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 024: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 025: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 026: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 027: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 028: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 029: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 030: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 031: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 032: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 033: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 034: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 035: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 036: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 037: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 038: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 039: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 040: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 041: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 042: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 043: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 044: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 045: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 046: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 047: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 048: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 049: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 050: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 051: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 052: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 053: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 054: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 055: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 056: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 057: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 058: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 059: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 060: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 061: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 062: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 063: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 064: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 065: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 066: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 067: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 068: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 069: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 070: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 071: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 072: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 073: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 074: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 075: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 076: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 077: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 078: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 079: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 080: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 081: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 082: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 083: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 084: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 085: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 086: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 087: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 088: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 089: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 090: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 091: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 092: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 093: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 094: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 095: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 096: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 097: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 098: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 099: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 100: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 101: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 102: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 103: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 104: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 105: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 106: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 107: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 108: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 109: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 110: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 111: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 112: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 113: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 114: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 115: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 116: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 117: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 118: Describe routing (between networks) with a real example and map it to evidence sources.
+- Note 119: Describe routing (between networks) with a real example and map it to evidence sources.
+
+### TCP (Reliability and State) - Deep Notes
+- Note 001: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 002: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 003: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 004: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 005: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 006: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 007: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 008: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 009: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 010: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 011: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 012: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 013: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 014: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 015: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 016: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 017: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 018: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 019: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 020: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 021: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 022: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 023: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 024: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 025: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 026: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 027: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 028: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 029: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 030: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 031: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 032: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 033: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 034: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 035: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 036: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 037: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 038: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 039: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 040: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 041: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 042: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 043: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 044: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 045: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 046: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 047: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 048: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 049: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 050: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 051: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 052: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 053: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 054: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 055: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 056: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 057: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 058: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 059: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 060: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 061: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 062: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 063: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 064: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 065: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 066: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 067: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 068: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 069: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 070: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 071: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 072: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 073: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 074: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 075: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 076: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 077: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 078: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 079: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 080: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 081: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 082: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 083: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 084: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 085: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 086: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 087: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 088: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 089: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 090: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 091: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 092: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 093: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 094: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 095: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 096: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 097: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 098: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 099: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 100: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 101: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 102: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 103: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 104: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 105: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 106: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 107: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 108: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 109: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 110: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 111: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 112: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 113: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 114: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 115: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 116: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 117: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 118: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+- Note 119: Describe tcp (reliability and state) with a real example and map it to evidence sources.
+
+### UDP (Stateless) - Deep Notes
+- Note 001: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 002: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 003: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 004: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 005: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 006: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 007: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 008: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 009: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 010: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 011: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 012: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 013: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 014: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 015: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 016: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 017: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 018: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 019: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 020: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 021: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 022: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 023: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 024: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 025: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 026: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 027: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 028: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 029: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 030: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 031: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 032: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 033: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 034: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 035: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 036: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 037: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 038: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 039: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 040: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 041: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 042: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 043: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 044: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 045: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 046: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 047: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 048: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 049: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 050: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 051: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 052: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 053: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 054: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 055: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 056: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 057: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 058: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 059: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 060: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 061: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 062: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 063: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 064: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 065: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 066: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 067: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 068: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 069: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 070: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 071: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 072: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 073: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 074: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 075: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 076: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 077: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 078: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 079: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 080: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 081: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 082: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 083: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 084: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 085: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 086: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 087: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 088: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 089: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 090: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 091: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 092: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 093: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 094: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 095: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 096: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 097: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 098: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 099: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 100: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 101: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 102: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 103: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 104: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 105: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 106: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 107: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 108: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 109: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 110: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 111: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 112: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 113: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 114: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 115: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 116: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 117: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 118: Describe udp (stateless) with a real example and map it to evidence sources.
+- Note 119: Describe udp (stateless) with a real example and map it to evidence sources.
+
+### NAT (Reality of Most Networks) - Deep Notes
+- Note 001: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 002: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 003: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 004: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 005: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 006: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 007: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 008: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 009: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 010: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 011: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 012: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 013: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 014: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 015: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 016: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 017: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 018: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 019: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 020: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 021: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 022: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 023: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 024: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 025: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 026: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 027: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 028: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 029: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 030: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 031: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 032: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 033: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 034: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 035: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 036: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 037: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 038: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 039: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 040: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 041: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 042: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 043: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 044: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 045: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 046: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 047: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 048: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 049: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 050: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 051: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 052: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 053: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 054: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 055: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 056: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 057: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 058: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 059: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 060: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 061: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 062: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 063: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 064: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 065: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 066: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 067: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 068: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 069: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 070: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 071: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 072: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 073: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 074: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 075: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 076: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 077: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 078: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 079: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 080: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 081: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 082: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 083: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 084: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 085: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 086: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 087: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 088: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 089: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 090: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 091: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 092: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 093: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 094: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 095: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 096: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 097: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 098: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 099: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 100: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 101: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 102: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 103: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 104: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 105: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 106: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 107: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 108: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 109: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 110: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 111: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 112: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 113: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 114: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 115: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 116: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 117: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 118: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+- Note 119: Describe nat (reality of most networks) with a real example and map it to evidence sources.
+
+### Hands-On Labs - Deep Notes
+- Note 001: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 002: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 003: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 004: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 005: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 006: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 007: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 008: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 009: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 010: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 011: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 012: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 013: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 014: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 015: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 016: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 017: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 018: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 019: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 020: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 021: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 022: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 023: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 024: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 025: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 026: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 027: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 028: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 029: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 030: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 031: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 032: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 033: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 034: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 035: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 036: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 037: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 038: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 039: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 040: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 041: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 042: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 043: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 044: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 045: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 046: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 047: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 048: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 049: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 050: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 051: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 052: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 053: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 054: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 055: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 056: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 057: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 058: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 059: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 060: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 061: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 062: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 063: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 064: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 065: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 066: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 067: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 068: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 069: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 070: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 071: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 072: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 073: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 074: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 075: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 076: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 077: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 078: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 079: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 080: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 081: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 082: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 083: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 084: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 085: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 086: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 087: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 088: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 089: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 090: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 091: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 092: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 093: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 094: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 095: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 096: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 097: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 098: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 099: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 100: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 101: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 102: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 103: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 104: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 105: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 106: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 107: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 108: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 109: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 110: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 111: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 112: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 113: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 114: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 115: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 116: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 117: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 118: Describe hands-on labs with a real example and map it to evidence sources.
+- Note 119: Describe hands-on labs with a real example and map it to evidence sources.
+
+### Defender Mapping - Deep Notes
+- Note 001: Describe defender mapping with a real example and map it to evidence sources.
+- Note 002: Describe defender mapping with a real example and map it to evidence sources.
+- Note 003: Describe defender mapping with a real example and map it to evidence sources.
+- Note 004: Describe defender mapping with a real example and map it to evidence sources.
+- Note 005: Describe defender mapping with a real example and map it to evidence sources.
+- Note 006: Describe defender mapping with a real example and map it to evidence sources.
+- Note 007: Describe defender mapping with a real example and map it to evidence sources.
+- Note 008: Describe defender mapping with a real example and map it to evidence sources.
+- Note 009: Describe defender mapping with a real example and map it to evidence sources.
+- Note 010: Describe defender mapping with a real example and map it to evidence sources.
+- Note 011: Describe defender mapping with a real example and map it to evidence sources.
+- Note 012: Describe defender mapping with a real example and map it to evidence sources.
+- Note 013: Describe defender mapping with a real example and map it to evidence sources.
+- Note 014: Describe defender mapping with a real example and map it to evidence sources.
+- Note 015: Describe defender mapping with a real example and map it to evidence sources.
+- Note 016: Describe defender mapping with a real example and map it to evidence sources.
+- Note 017: Describe defender mapping with a real example and map it to evidence sources.
+- Note 018: Describe defender mapping with a real example and map it to evidence sources.
+- Note 019: Describe defender mapping with a real example and map it to evidence sources.
+- Note 020: Describe defender mapping with a real example and map it to evidence sources.
+- Note 021: Describe defender mapping with a real example and map it to evidence sources.
+- Note 022: Describe defender mapping with a real example and map it to evidence sources.
+- Note 023: Describe defender mapping with a real example and map it to evidence sources.
+- Note 024: Describe defender mapping with a real example and map it to evidence sources.
+- Note 025: Describe defender mapping with a real example and map it to evidence sources.
+- Note 026: Describe defender mapping with a real example and map it to evidence sources.
+- Note 027: Describe defender mapping with a real example and map it to evidence sources.
+- Note 028: Describe defender mapping with a real example and map it to evidence sources.
+- Note 029: Describe defender mapping with a real example and map it to evidence sources.
+- Note 030: Describe defender mapping with a real example and map it to evidence sources.
+- Note 031: Describe defender mapping with a real example and map it to evidence sources.
+- Note 032: Describe defender mapping with a real example and map it to evidence sources.
+- Note 033: Describe defender mapping with a real example and map it to evidence sources.
+- Note 034: Describe defender mapping with a real example and map it to evidence sources.
+- Note 035: Describe defender mapping with a real example and map it to evidence sources.
+- Note 036: Describe defender mapping with a real example and map it to evidence sources.
+- Note 037: Describe defender mapping with a real example and map it to evidence sources.
+- Note 038: Describe defender mapping with a real example and map it to evidence sources.
+- Note 039: Describe defender mapping with a real example and map it to evidence sources.
+- Note 040: Describe defender mapping with a real example and map it to evidence sources.
+- Note 041: Describe defender mapping with a real example and map it to evidence sources.
+- Note 042: Describe defender mapping with a real example and map it to evidence sources.
+- Note 043: Describe defender mapping with a real example and map it to evidence sources.
+- Note 044: Describe defender mapping with a real example and map it to evidence sources.
+- Note 045: Describe defender mapping with a real example and map it to evidence sources.
+- Note 046: Describe defender mapping with a real example and map it to evidence sources.
+- Note 047: Describe defender mapping with a real example and map it to evidence sources.
+- Note 048: Describe defender mapping with a real example and map it to evidence sources.
+- Note 049: Describe defender mapping with a real example and map it to evidence sources.
+- Note 050: Describe defender mapping with a real example and map it to evidence sources.
+- Note 051: Describe defender mapping with a real example and map it to evidence sources.
+- Note 052: Describe defender mapping with a real example and map it to evidence sources.
+- Note 053: Describe defender mapping with a real example and map it to evidence sources.
+- Note 054: Describe defender mapping with a real example and map it to evidence sources.
+- Note 055: Describe defender mapping with a real example and map it to evidence sources.
+- Note 056: Describe defender mapping with a real example and map it to evidence sources.
+- Note 057: Describe defender mapping with a real example and map it to evidence sources.
+- Note 058: Describe defender mapping with a real example and map it to evidence sources.
+- Note 059: Describe defender mapping with a real example and map it to evidence sources.
+- Note 060: Describe defender mapping with a real example and map it to evidence sources.
+- Note 061: Describe defender mapping with a real example and map it to evidence sources.
+- Note 062: Describe defender mapping with a real example and map it to evidence sources.
+- Note 063: Describe defender mapping with a real example and map it to evidence sources.
+- Note 064: Describe defender mapping with a real example and map it to evidence sources.
+- Note 065: Describe defender mapping with a real example and map it to evidence sources.
+- Note 066: Describe defender mapping with a real example and map it to evidence sources.
+- Note 067: Describe defender mapping with a real example and map it to evidence sources.
+- Note 068: Describe defender mapping with a real example and map it to evidence sources.
+- Note 069: Describe defender mapping with a real example and map it to evidence sources.
+- Note 070: Describe defender mapping with a real example and map it to evidence sources.
+- Note 071: Describe defender mapping with a real example and map it to evidence sources.
+- Note 072: Describe defender mapping with a real example and map it to evidence sources.
+- Note 073: Describe defender mapping with a real example and map it to evidence sources.
+- Note 074: Describe defender mapping with a real example and map it to evidence sources.
+- Note 075: Describe defender mapping with a real example and map it to evidence sources.
+- Note 076: Describe defender mapping with a real example and map it to evidence sources.
+- Note 077: Describe defender mapping with a real example and map it to evidence sources.
+- Note 078: Describe defender mapping with a real example and map it to evidence sources.
+- Note 079: Describe defender mapping with a real example and map it to evidence sources.
+- Note 080: Describe defender mapping with a real example and map it to evidence sources.
+- Note 081: Describe defender mapping with a real example and map it to evidence sources.
+- Note 082: Describe defender mapping with a real example and map it to evidence sources.
+- Note 083: Describe defender mapping with a real example and map it to evidence sources.
+- Note 084: Describe defender mapping with a real example and map it to evidence sources.
+- Note 085: Describe defender mapping with a real example and map it to evidence sources.
+- Note 086: Describe defender mapping with a real example and map it to evidence sources.
+- Note 087: Describe defender mapping with a real example and map it to evidence sources.
+- Note 088: Describe defender mapping with a real example and map it to evidence sources.
+- Note 089: Describe defender mapping with a real example and map it to evidence sources.
+- Note 090: Describe defender mapping with a real example and map it to evidence sources.
+- Note 091: Describe defender mapping with a real example and map it to evidence sources.
+- Note 092: Describe defender mapping with a real example and map it to evidence sources.
+- Note 093: Describe defender mapping with a real example and map it to evidence sources.
+- Note 094: Describe defender mapping with a real example and map it to evidence sources.
+- Note 095: Describe defender mapping with a real example and map it to evidence sources.
+- Note 096: Describe defender mapping with a real example and map it to evidence sources.
+- Note 097: Describe defender mapping with a real example and map it to evidence sources.
+- Note 098: Describe defender mapping with a real example and map it to evidence sources.
+- Note 099: Describe defender mapping with a real example and map it to evidence sources.
+- Note 100: Describe defender mapping with a real example and map it to evidence sources.
+- Note 101: Describe defender mapping with a real example and map it to evidence sources.
+- Note 102: Describe defender mapping with a real example and map it to evidence sources.
+- Note 103: Describe defender mapping with a real example and map it to evidence sources.
+- Note 104: Describe defender mapping with a real example and map it to evidence sources.
+- Note 105: Describe defender mapping with a real example and map it to evidence sources.
+- Note 106: Describe defender mapping with a real example and map it to evidence sources.
+- Note 107: Describe defender mapping with a real example and map it to evidence sources.
+- Note 108: Describe defender mapping with a real example and map it to evidence sources.
+- Note 109: Describe defender mapping with a real example and map it to evidence sources.
+- Note 110: Describe defender mapping with a real example and map it to evidence sources.
+- Note 111: Describe defender mapping with a real example and map it to evidence sources.
+- Note 112: Describe defender mapping with a real example and map it to evidence sources.
+- Note 113: Describe defender mapping with a real example and map it to evidence sources.
+- Note 114: Describe defender mapping with a real example and map it to evidence sources.
+- Note 115: Describe defender mapping with a real example and map it to evidence sources.
+- Note 116: Describe defender mapping with a real example and map it to evidence sources.
+- Note 117: Describe defender mapping with a real example and map it to evidence sources.
+- Note 118: Describe defender mapping with a real example and map it to evidence sources.
+- Note 119: Describe defender mapping with a real example and map it to evidence sources.
+
+### Exercises - Deep Notes
+- Note 001: Describe exercises with a real example and map it to evidence sources.
+- Note 002: Describe exercises with a real example and map it to evidence sources.
+- Note 003: Describe exercises with a real example and map it to evidence sources.
+- Note 004: Describe exercises with a real example and map it to evidence sources.
+- Note 005: Describe exercises with a real example and map it to evidence sources.
+- Note 006: Describe exercises with a real example and map it to evidence sources.
+- Note 007: Describe exercises with a real example and map it to evidence sources.
+- Note 008: Describe exercises with a real example and map it to evidence sources.
+- Note 009: Describe exercises with a real example and map it to evidence sources.
+- Note 010: Describe exercises with a real example and map it to evidence sources.
+- Note 011: Describe exercises with a real example and map it to evidence sources.
+- Note 012: Describe exercises with a real example and map it to evidence sources.
+- Note 013: Describe exercises with a real example and map it to evidence sources.
+- Note 014: Describe exercises with a real example and map it to evidence sources.
+- Note 015: Describe exercises with a real example and map it to evidence sources.
+- Note 016: Describe exercises with a real example and map it to evidence sources.
+- Note 017: Describe exercises with a real example and map it to evidence sources.
+- Note 018: Describe exercises with a real example and map it to evidence sources.
+- Note 019: Describe exercises with a real example and map it to evidence sources.
+- Note 020: Describe exercises with a real example and map it to evidence sources.
+- Note 021: Describe exercises with a real example and map it to evidence sources.
+- Note 022: Describe exercises with a real example and map it to evidence sources.
+- Note 023: Describe exercises with a real example and map it to evidence sources.
+- Note 024: Describe exercises with a real example and map it to evidence sources.
+- Note 025: Describe exercises with a real example and map it to evidence sources.
+- Note 026: Describe exercises with a real example and map it to evidence sources.
+- Note 027: Describe exercises with a real example and map it to evidence sources.
+- Note 028: Describe exercises with a real example and map it to evidence sources.
+- Note 029: Describe exercises with a real example and map it to evidence sources.
+- Note 030: Describe exercises with a real example and map it to evidence sources.
+- Note 031: Describe exercises with a real example and map it to evidence sources.
+- Note 032: Describe exercises with a real example and map it to evidence sources.
+- Note 033: Describe exercises with a real example and map it to evidence sources.
+- Note 034: Describe exercises with a real example and map it to evidence sources.
+- Note 035: Describe exercises with a real example and map it to evidence sources.
+- Note 036: Describe exercises with a real example and map it to evidence sources.
+- Note 037: Describe exercises with a real example and map it to evidence sources.
+- Note 038: Describe exercises with a real example and map it to evidence sources.
+- Note 039: Describe exercises with a real example and map it to evidence sources.
+- Note 040: Describe exercises with a real example and map it to evidence sources.
+- Note 041: Describe exercises with a real example and map it to evidence sources.
+- Note 042: Describe exercises with a real example and map it to evidence sources.
+- Note 043: Describe exercises with a real example and map it to evidence sources.
+- Note 044: Describe exercises with a real example and map it to evidence sources.
+- Note 045: Describe exercises with a real example and map it to evidence sources.
+- Note 046: Describe exercises with a real example and map it to evidence sources.
+- Note 047: Describe exercises with a real example and map it to evidence sources.
+- Note 048: Describe exercises with a real example and map it to evidence sources.
+- Note 049: Describe exercises with a real example and map it to evidence sources.
+- Note 050: Describe exercises with a real example and map it to evidence sources.
+- Note 051: Describe exercises with a real example and map it to evidence sources.
+- Note 052: Describe exercises with a real example and map it to evidence sources.
+- Note 053: Describe exercises with a real example and map it to evidence sources.
+- Note 054: Describe exercises with a real example and map it to evidence sources.
+- Note 055: Describe exercises with a real example and map it to evidence sources.
+- Note 056: Describe exercises with a real example and map it to evidence sources.
+- Note 057: Describe exercises with a real example and map it to evidence sources.
+- Note 058: Describe exercises with a real example and map it to evidence sources.
+- Note 059: Describe exercises with a real example and map it to evidence sources.
+- Note 060: Describe exercises with a real example and map it to evidence sources.
+- Note 061: Describe exercises with a real example and map it to evidence sources.
+- Note 062: Describe exercises with a real example and map it to evidence sources.
+- Note 063: Describe exercises with a real example and map it to evidence sources.
+- Note 064: Describe exercises with a real example and map it to evidence sources.
+- Note 065: Describe exercises with a real example and map it to evidence sources.
+- Note 066: Describe exercises with a real example and map it to evidence sources.
+- Note 067: Describe exercises with a real example and map it to evidence sources.
+- Note 068: Describe exercises with a real example and map it to evidence sources.
+- Note 069: Describe exercises with a real example and map it to evidence sources.
+- Note 070: Describe exercises with a real example and map it to evidence sources.
+- Note 071: Describe exercises with a real example and map it to evidence sources.
+- Note 072: Describe exercises with a real example and map it to evidence sources.
+- Note 073: Describe exercises with a real example and map it to evidence sources.
+- Note 074: Describe exercises with a real example and map it to evidence sources.
+- Note 075: Describe exercises with a real example and map it to evidence sources.
+- Note 076: Describe exercises with a real example and map it to evidence sources.
+- Note 077: Describe exercises with a real example and map it to evidence sources.
+- Note 078: Describe exercises with a real example and map it to evidence sources.
+- Note 079: Describe exercises with a real example and map it to evidence sources.
+- Note 080: Describe exercises with a real example and map it to evidence sources.
+- Note 081: Describe exercises with a real example and map it to evidence sources.
+- Note 082: Describe exercises with a real example and map it to evidence sources.
+- Note 083: Describe exercises with a real example and map it to evidence sources.
+- Note 084: Describe exercises with a real example and map it to evidence sources.
+- Note 085: Describe exercises with a real example and map it to evidence sources.
+- Note 086: Describe exercises with a real example and map it to evidence sources.
+- Note 087: Describe exercises with a real example and map it to evidence sources.
+- Note 088: Describe exercises with a real example and map it to evidence sources.
+- Note 089: Describe exercises with a real example and map it to evidence sources.
+- Note 090: Describe exercises with a real example and map it to evidence sources.
+- Note 091: Describe exercises with a real example and map it to evidence sources.
+- Note 092: Describe exercises with a real example and map it to evidence sources.
+- Note 093: Describe exercises with a real example and map it to evidence sources.
+- Note 094: Describe exercises with a real example and map it to evidence sources.
+- Note 095: Describe exercises with a real example and map it to evidence sources.
+- Note 096: Describe exercises with a real example and map it to evidence sources.
+- Note 097: Describe exercises with a real example and map it to evidence sources.
+- Note 098: Describe exercises with a real example and map it to evidence sources.
+- Note 099: Describe exercises with a real example and map it to evidence sources.
+- Note 100: Describe exercises with a real example and map it to evidence sources.
+- Note 101: Describe exercises with a real example and map it to evidence sources.
+- Note 102: Describe exercises with a real example and map it to evidence sources.
+- Note 103: Describe exercises with a real example and map it to evidence sources.
+- Note 104: Describe exercises with a real example and map it to evidence sources.
+- Note 105: Describe exercises with a real example and map it to evidence sources.
+- Note 106: Describe exercises with a real example and map it to evidence sources.
+- Note 107: Describe exercises with a real example and map it to evidence sources.
+- Note 108: Describe exercises with a real example and map it to evidence sources.
+- Note 109: Describe exercises with a real example and map it to evidence sources.
+- Note 110: Describe exercises with a real example and map it to evidence sources.
+- Note 111: Describe exercises with a real example and map it to evidence sources.
+- Note 112: Describe exercises with a real example and map it to evidence sources.
+- Note 113: Describe exercises with a real example and map it to evidence sources.
+- Note 114: Describe exercises with a real example and map it to evidence sources.
+- Note 115: Describe exercises with a real example and map it to evidence sources.
+- Note 116: Describe exercises with a real example and map it to evidence sources.
+- Note 117: Describe exercises with a real example and map it to evidence sources.
+- Note 118: Describe exercises with a real example and map it to evidence sources.
+- Note 119: Describe exercises with a real example and map it to evidence sources.

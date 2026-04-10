@@ -1,0 +1,1 @@
+# Career & Interview Prep\n\nGetting the job.\n\n## Key Resources\n- `Cybersecurity_Interview_Full_Guide.docx`\n- `Cybersecurity_Interview_Prep_Handbook_500pp.pdf`\n- `Roadmap.pdf`\n\n## Focus Areas\n- Explain a complex concept simply.\n- `What happens when you type google.com into a browser?`\n- CIA Triad (Confidentiality, Integrity, Availability).
